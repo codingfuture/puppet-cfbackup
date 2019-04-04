@@ -1,0 +1,43 @@
+{
+  "name": "codingfuture-cfbackup",
+  "version": "0.0.1",
+  "author": "Andrey Galkin",
+  "summary": "Configures system backup",
+  "license": "Apache-2.0",
+  "source": "https://github.com/codingfuture/puppet-cfbackup",
+  "project_page": "https://github.com/codingfuture/puppet-cfbackup",
+  "issues_url": "https://github.com/codingfuture/puppet-cfbackup/issues",
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "8",
+        "9"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "16.04",
+        "18.04"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">=4.7.0 <7.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "codingfuture-cfnetwork",
+      "version_requirement": ">= 1.1.0 <2.0.0"
+    },
+    {
+      "name": "codingfuture-cfsystem",
+      "version_requirement": ">= 1.1.0 <2.0.0"
+    }
+  ],
+  "data_provider": "hiera"
+}
