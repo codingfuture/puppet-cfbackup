@@ -40,6 +40,13 @@ echo "-----------------------------------"
 echo "Starting backup into ${backup_dir}!"
 echo "-----------------------------------"
 
+exec 3<${backup_root_dir}/backup.lock
+
+if ! flock -xn 3; then
+    echo "Error: failed to get backup lock!"
+    exit 1
+fi
+
 # Execute inner script
 if ! /bin/dash -ex -; then
     echo "----------------"

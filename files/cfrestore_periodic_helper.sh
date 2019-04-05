@@ -23,6 +23,14 @@ fi
 
 set -e
 
+
+exec 3<${backup_root_dir}/backup.lock
+
+if ! flock -xn 3; then
+    echo "Error: failed to get backup lock!"
+    exit 1
+fi
+
 sub_dir="$(cat ${backup_root_dir}/last_backup)"
 backup_dir="${backup_root_dir}/${sub_dir}"
 

@@ -15,4 +15,10 @@ define cfbackup::path(
         $prepare = undef,
 ) {
     $path = $title
+
+    file { "${path}/backup.lock":
+        mode    => '0440',
+        owner   => getparam(File[$path], 'owner'),
+        content => '',
+    }
 }
