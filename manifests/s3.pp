@@ -14,22 +14,13 @@ class cfbackup::s3(
         $secret_key,
     String[1]
         $s3cmd_version = 'latest',
-    Integer[0]
-        $reserve_ram = 32,
 ) {
     include cfsystem::pip
     include cfsystem::custombin
 
     $s3cmd = '/usr/local/bin/s3cmd'
-    $s3autobackup = "${cfsystem::custombin::bin_dir}/cfbackup_s3_auto"
+    $s3upload = "${cfsystem::custombin::bin_dir}/cfbackup_s3_upload"
     $s3restore = "${cfsystem::custombin::bin_dir}/cfbackup_s3_recover"
-
-    cfsystem_memory_weight { 'cfbackup::s3':
-        ensure => present,
-        weight => 1,
-        min_mb => $reserve_ram,
-        max_mb => $reserve_ram,
-    }
 
     $s3params = {
         url        => $url,
@@ -45,12 +36,19 @@ class cfbackup::s3(
         provider => cfpip2,
         require  => Package['pip'],
     }
-    -> file { $s3autobackup:
+    -> file { $s3upload:
         mode    => '0500',
-        content => epp('cfbackup/s3autobackup.sh.epp', $s3params)
+        content => epp('cfbackup/s3upload.sh.epp', $s3params)
     }
     -> file { $s3restore:
         mode    => '0500',
         content => epp('cfbackup/s3restore.sh.epp', $s3params)
+    }
+    -> file { $cfbackup::upload_helper:
+        mode    => '0500',
+        content => [
+            '#!/bin/dash',
+            "${s3upload} \"\$@\"",
+        ].join("\n"),
     }
 }

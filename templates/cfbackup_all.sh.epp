@@ -1,0 +1,35 @@
+#!/bin/dash
+
+echo
+echo "Performing periodic_dump backup"
+echo
+
+log_file=<%= $::cfbackup::root_dir %>/last_auto_backup.log
+
+echo "Started at: $(/bin/date --utc +%Y%m%d_%H%M%S)" >$log_file
+echo >>$log_file
+
+overall_res=0
+
+/usr/bin/jq \
+    -r '.sections.cfbackup_path[] | select(.type=="periodic_dump") | .prepare' \
+    /etc/cfsystem.json \
+    | while read script; do
+        echo -n "> Running $script ... "
+        $script >>$log_file 2>&1
+
+        if [ $? -eq 0 ]; then
+            echo "OK"
+        else
+            echo "FAILED"
+            overall_res=1
+        fi
+    done
+
+<%= $::cfbackup::upload_all %>
+
+if [ $? -ne 0 ]; then
+    overall_res=1
+fi
+
+exit $overall_res

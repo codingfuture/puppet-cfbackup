@@ -1,0 +1,45 @@
+#!/bin/dash
+
+echo
+echo "Performing periodic_dump upload & cleanup"
+echo
+
+upload_helper=<%= $::cfbackup::upload_helper %>
+
+/usr/bin/jq -r \
+    '.sections.cfbackup_path | to_entries[] | select(.value.type=="periodic_dump") | "\(.key) \(.value.namespace) \(.value.id)"' \
+    /etc/cfsystem.json \
+    | while read path ns id; do
+        if [ ! -e "$path/last_backup" ]; then
+            echo "Skipping empty $path"
+            continue
+        fi
+
+        last_backup=$(cat "$path/last_backup")
+
+        /bin/ls -v "$path" | \
+            /bin/egrep '^[0-9]+[0-9_-]+$' \
+            | while read sub_dir; do
+
+<% if $::cfbackup::type == 'local' { -%>
+            res=0
+<% } else { -%>
+            echo -n "> Uploading $path/$sub_dir to $ns/$id/$sub_dir ... "
+            $upload_helper $ns $id $path $sub_dir
+            res=$?
+
+            if [ $res -eq 0 ]; then
+                echo "OK"
+            else
+                echo "FAILED"
+            fi
+<% } -%>
+
+            if [ "$sub_dir" = "$last_backup" ]; then
+                break
+            elif [ $res -eq 0 ]; then
+                echo "> Removing old $path/$sub_dir"
+                /bin/rm -rf "${path:-fail}/${sub_dir:-fail}"
+            fi
+        done
+    done

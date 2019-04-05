@@ -5,5 +5,9 @@
 
 class cfbackup::local() {
     # noop
-    # TODO: cleanup
+
+    file { $cfbackup::upload_helper:
+        mode    => '0550',
+        content => '#!/bin/dash',
+    }
 }

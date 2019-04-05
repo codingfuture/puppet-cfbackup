@@ -21,4 +21,13 @@ define cfbackup::path(
         owner   => getparam(File[$path], 'owner'),
         content => '',
     }
+
+    cfbackup_path { $title:
+        ensure    => present,
+        namespace => $namespace,
+        id        => $id,
+        type      => $type,
+        compress  => $compress,
+        prepare   => $prepare,
+    }
 }
