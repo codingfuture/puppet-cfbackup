@@ -17,8 +17,15 @@ upload_helper=<%= $::cfbackup::upload_helper %>
     '.sections.cfbackup_path | to_entries[] | select(.value.type=="periodic_dump") | "\(.key) \(.value.namespace) \(.value.id) (.value.compress)"' \
     /etc/cfsystem.json \
     | while read path ns id compress; do
+        exec 3<${path}/backup.lock
+
+        if ! flock -w <%= $cfbackup::lock_timeout %> -x 3; then
+            echo "> Skipping locked $path"
+            continue
+        fi
+
         if [ ! -e "$path/last_backup" ]; then
-            echo "Skipping empty $path"
+            echo "> Skipping empty $path"
             continue
         fi
 

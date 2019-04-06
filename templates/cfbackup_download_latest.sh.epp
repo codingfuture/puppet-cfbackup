@@ -21,6 +21,13 @@ download_helper=<%= $::cfbackup::download_helper %>
     | while read path ns id compress; do
         [ -n "$filter" -a "$path" != "$filter" ] && continue
 
+        exec 3<${path}/backup.lock
+
+        if ! flock -w <%= $cfbackup::lock_timeout %> -x 3; then
+            echo "> Skipping locked $path"
+            continue
+        fi
+
         last_backup_file="$path/last_backup"
 
         if [ -f "$last_backup_file" ]; then

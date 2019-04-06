@@ -26,6 +26,7 @@ class cfbackup (
         mode   => '0511',
     }
 
+    $lock_timeout = 60
     $backup_all = "${cfsystem::custombin::bin_dir}/cfbackup_all"
     $upload_all = "${cfsystem::custombin::bin_dir}/cfbackup_upload_all"
     $download_latest = "${cfsystem::custombin::bin_dir}/cfbackup_download_latest"
