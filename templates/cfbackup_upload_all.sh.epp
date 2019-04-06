@@ -4,12 +4,17 @@ echo
 echo "Performing periodic_dump upload & cleanup"
 echo
 
+log_file=<%= $::cfbackup::root_dir %>/last_upload.log
+
+echo "Started at: $(/bin/date --utc +%Y%m%d_%H%M%S)" >$log_file
+echo >>$log_file
+
 upload_helper=<%= $::cfbackup::upload_helper %>
 
 /usr/bin/jq -r \
-    '.sections.cfbackup_path | to_entries[] | select(.value.type=="periodic_dump") | "\(.key) \(.value.namespace) \(.value.id)"' \
+    '.sections.cfbackup_path | to_entries[] | select(.value.type=="periodic_dump") | "\(.key) \(.value.namespace) \(.value.id) (.value.compress)"' \
     /etc/cfsystem.json \
-    | while read path ns id; do
+    | while read path ns id compress; do
         if [ ! -e "$path/last_backup" ]; then
             echo "Skipping empty $path"
             continue
@@ -25,7 +30,18 @@ upload_helper=<%= $::cfbackup::upload_helper %>
             res=0
 <% } else { -%>
             echo -n "> Uploading $path/$sub_dir to $ns/$id/$sub_dir ... "
-            $upload_helper $ns $id $path $sub_dir
+
+            if [ "$compress" = "true" ]; then
+                taropt=j
+                tarext=.bz2
+            else
+                taropt=
+                tarext=
+            fi
+
+            /bin/tar c$taropt -C "$path" "$sub_dir" -f "$path/${sub_dir}.tar${tarext}"
+
+            $upload_helper "$ns" "$id" "$path/${sub_dir}.tar${tarext}" >>$log_file 2>&1
             res=$?
 
             if [ $res -eq 0 ]; then
@@ -36,10 +52,11 @@ upload_helper=<%= $::cfbackup::upload_helper %>
 <% } -%>
 
             if [ "$sub_dir" = "$last_backup" ]; then
+                /bin/rm -f "$path/${sub_dir}.tar${tarext}"
                 break
             elif [ $res -eq 0 ]; then
                 echo "> Removing old $path/$sub_dir"
-                /bin/rm -rf "${path:-fail}/${sub_dir:-fail}"
+                /bin/rm -rf "${path:-fail}/${sub_dir:-fail}" "$path/${sub_dir}.tar${tarext}"
             fi
         done
     done

@@ -27,6 +27,7 @@ class cfbackup (
     $backup_all = "${cfsystem::custombin::bin_dir}/cfbackup_all"
     $upload_all = "${cfsystem::custombin::bin_dir}/cfbackup_upload_all"
     $upload_helper = "${cfsystem::custombin::bin_dir}/cfbackup_upload_helper"
+    $restore_helper = "${cfsystem::custombin::bin_dir}/cfbackup_restore_helper"
 
     $periodic_helper = "${cfsystem::custombin::bin_dir}/cfbackup_periodic_helper.sh"
     $periodic_restore_helper = "${cfsystem::custombin::bin_dir}/cfrestore_periodic_helper.sh"

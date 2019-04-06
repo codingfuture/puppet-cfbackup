@@ -1,0 +1,16 @@
+#!/bin/dash
+
+ns=$1
+id=$2
+file=$3
+host=$(hostname --fqdn)
+
+for d in "$host" "$host/$ns" "$host/$ns/$id"; do
+    /usr/bin/sftp backuphost >/dev/null 2>&1 <<EOT
+mkdir $d
+EOT
+done
+
+/usr/bin/sftp backuphost <<EOT
+put $file $host/$ns/$id/$(basename $file)
+EOT
