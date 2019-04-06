@@ -7,7 +7,7 @@ define cfbackup::path(
         $namespace,
     String[1]
         $id,
-    Enum['raw', 'periodic_dump']
+    Enum['periodic_dump']
         $type,
     Boolean
         $compress = true,

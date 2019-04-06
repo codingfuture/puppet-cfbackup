@@ -36,19 +36,12 @@ class cfbackup::s3(
         provider => cfpip2,
         require  => Package['pip'],
     }
-    -> file { $s3upload:
-        mode    => '0500',
-        content => epp('cfbackup/s3upload.sh.epp', $s3params)
-    }
-    -> file { $s3restore:
-        mode    => '0500',
-        content => epp('cfbackup/s3restore.sh.epp', $s3params)
-    }
     -> file { $cfbackup::upload_helper:
         mode    => '0500',
-        content => [
-            '#!/bin/dash',
-            "${s3upload} \"\$@\"",
-        ].join("\n"),
+        content => epp('cfbackup/s3_upload.sh.epp', $s3params),
+    }
+    -> file { $cfbackup::download_helper:
+        mode    => '0500',
+        content => epp('cfbackup/s3_download.sh.epp', $s3params),
     }
 }

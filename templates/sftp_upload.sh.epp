@@ -11,6 +11,9 @@ mkdir $d
 EOT
 done
 
-/usr/bin/sftp backuphost <<EOT
-put $file $host/$ns/$id/$(basename $file)
+# NOTE: batch is required to get proper exit code
+
+/usr/bin/sftp -b /proc/self/fd/0 backuphost <<EOT
+put $file "$host/$ns/$id/$(basename $file)"
 EOT
+

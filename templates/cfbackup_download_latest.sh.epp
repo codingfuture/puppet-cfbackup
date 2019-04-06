@@ -1,0 +1,94 @@
+#!/bin/dash
+
+filter=$1
+
+echo
+echo "Downloads the latest"
+echo
+
+log_file=<%= $::cfbackup::root_dir %>/last_download.log
+
+echo "Started at: $(/bin/date --utc +%Y%m%d_%H%M%S)" >$log_file
+echo >>$log_file
+
+overall_res=0
+
+download_helper=<%= $::cfbackup::download_helper %>
+
+/usr/bin/jq -r \
+    '.sections.cfbackup_path | to_entries[] | select(.value.type=="periodic_dump") | "\(.key) \(.value.namespace) \(.value.id)"' \
+    /etc/cfsystem.json \
+    | while read path ns id compress; do
+        [ -n "$filter" -a "$path" != "$filter" ] && continue
+
+        last_backup_file="$path/last_backup"
+
+        if [ -f "$last_backup_file" ]; then
+            # -a is not applicable due to inner $(cat)
+            if [ -d "$path/$(cat $last_backup_file)" ]; then
+                echo "> Skipping already present $path"
+                continue
+            fi
+        fi
+
+<% if $::cfbackup::type != 'local' { -%>
+        echo -n "> Downloading $ns/$id/last_backup to $last_backup_file ... "
+        $download_helper "$ns" "$id" "$last_backup_file" >>$log_file 2>&1
+        res=$?
+
+        if [ $res -eq 0 ]; then
+            echo "OK"
+        else
+            overall_res=1
+            echo "FAILED"
+
+            echo "> Skipping missing $ns/$id"
+            continue
+        fi
+
+        last_backup=$(cat "$last_backup_file")
+        last_backup_path="${path}/${last_backup}"
+
+        if [ -d "$last_backup_path" ]; then
+            echo "> Skipping existing $last_backup_path"
+            continue
+        fi
+
+        echo -n "> Downloading $ns/$id/$last_backup to $last_backup_path ... "
+        res=1
+
+        for ext in .tar .tar.bz2 .tar.gz tar.xz; do
+            tarball="${last_backup_path}${ext}"
+
+            if $download_helper "$ns" "$id" "${tarball}" >>$log_file 2>&1; then
+                res=0
+                break
+            fi
+        done
+
+        if [ $res -eq 0 ]; then
+            case "$tarball" in
+            *.tar) /bin/tar -xf $tarball -C $path ;;
+            *.tar.bz2) /bin/tar -xjf $tarball -C $path ;;
+            *.tar.gz) /bin/tar -xzf $tarball -C $path ;;
+            *.tar.xz) /bin/tar -xJf $tarball -C $path ;;
+            *)
+                echo "! Unknown format $ext" >>$log_file;
+                overall_res=1
+                echo "FAILED"
+                continue
+                ;;
+            esac
+
+            /bin/rm -f "${tarball:-fail}"
+            /bin/chown "$(stat -c "%U:%G" $path)" ${last_backup_path}
+
+            echo "OK"
+        else
+            overall_res=1
+            echo "FAILED"
+        fi
+<% } -%>
+    done
+
+exit $overall_res

@@ -10,4 +10,8 @@ class cfbackup::local() {
         mode    => '0550',
         content => '#!/bin/dash',
     }
+    file { $cfbackup::download_helper:
+        mode    => '0550',
+        content => '#!/bin/dash',
+    }
 }

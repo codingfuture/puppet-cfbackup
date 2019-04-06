@@ -1,0 +1,11 @@
+#!/bin/dash
+
+ns=$1
+id=$2
+file=$3
+host=$(hostname --fqdn)
+
+# NOTE: batch is required to get proper exit code
+/usr/bin/sftp -b /proc/self/fd/0 backuphost <<EOT
+get $host/$ns/$id/$(basename $file) $file
+EOT

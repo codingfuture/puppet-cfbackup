@@ -29,7 +29,11 @@ class cfbackup::sftp(
             "   User ${user}",
             "   Hostname ${host}",
             "   Port ${port}",
-            "   IdentityFile ${ssh_idkey}"
+            "   IdentityFile ${ssh_idkey}",
+            '   ControlPath ~/.ssh/master-backuphost',
+            '   ControlPersist 10s',
+            '   ControlMaster auto',
+            '',
         ].join("\n"),
     }
 
@@ -37,9 +41,9 @@ class cfbackup::sftp(
         mode    => '0500',
         content => epp('cfbackup/sftp_upload.sh.epp'),
     }
-    file { $cfbackup::restore_helper:
+    file { $cfbackup::download_helper:
         mode    => '0500',
-        content => epp('cfbackup/sftp_restore.sh.epp'),
+        content => epp('cfbackup/sftp_download.sh.epp'),
     }
 
     cfnetwork::describe_service { 'cfbackup_sftp':

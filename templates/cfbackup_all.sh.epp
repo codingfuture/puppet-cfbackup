@@ -26,10 +26,4 @@ overall_res=0
         fi
     done
 
-<%= $::cfbackup::upload_all %>
-
-if [ $? -ne 0 ]; then
-    overall_res=1
-fi
-
 exit $overall_res

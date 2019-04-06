@@ -9,6 +9,8 @@ log_file=<%= $::cfbackup::root_dir %>/last_upload.log
 echo "Started at: $(/bin/date --utc +%Y%m%d_%H%M%S)" >$log_file
 echo >>$log_file
 
+overall_res=0
+
 upload_helper=<%= $::cfbackup::upload_helper %>
 
 /usr/bin/jq -r \
@@ -29,34 +31,52 @@ upload_helper=<%= $::cfbackup::upload_helper %>
 <% if $::cfbackup::type == 'local' { -%>
             res=0
 <% } else { -%>
-            echo -n "> Uploading $path/$sub_dir to $ns/$id/$sub_dir ... "
-
             if [ "$compress" = "true" ]; then
+                # NOTE: LZMA is quite heavy on computation
                 taropt=j
-                tarext=.bz2
+                tarext=.tar.bz2
             else
                 taropt=
-                tarext=
+                tarext=.tar
             fi
 
-            /bin/tar c$taropt -C "$path" "$sub_dir" -f "$path/${sub_dir}.tar${tarext}"
+            echo -n "> Uploading $path/$sub_dir to $ns/$id/${sub_dir} (${tarext}) ... "
 
-            $upload_helper "$ns" "$id" "$path/${sub_dir}.tar${tarext}" >>$log_file 2>&1
+            /bin/tar c$taropt -C "$path" "$sub_dir" -f "$path/${sub_dir}${tarext}"
+
+            $upload_helper "$ns" "$id" "$path/${sub_dir}${tarext}" >>$log_file 2>&1
             res=$?
 
             if [ $res -eq 0 ]; then
                 echo "OK"
             else
+                overall_res=1
                 echo "FAILED"
             fi
 <% } -%>
 
             if [ "$sub_dir" = "$last_backup" ]; then
-                /bin/rm -f "$path/${sub_dir}.tar${tarext}"
+                /bin/rm -f "${path:-fail}/${sub_dir}${tarext}"
                 break
             elif [ $res -eq 0 ]; then
                 echo "> Removing old $path/$sub_dir"
-                /bin/rm -rf "${path:-fail}/${sub_dir:-fail}" "$path/${sub_dir}.tar${tarext}"
+                /bin/rm -rf "${path:-fail}/${sub_dir:-fail}" "$path/${sub_dir}${tarext}"
             fi
         done
+
+<% if $::cfbackup::type != 'local' { -%>
+        echo -n "> Uploading $path/last_backup to $ns/$id/last_backup ... "
+
+        $upload_helper "$ns" "$id" "$path/last_backup" >>$log_file 2>&1
+        res=$?
+
+        if [ $res -eq 0 ]; then
+            echo "OK"
+        else
+            overall_res=1
+            echo "FAILED"
+        fi
+<% } -%>
     done
+
+exit $overall_res
