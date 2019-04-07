@@ -38,14 +38,14 @@ define cfbackup::path(
             ensure => directory,
             mode   => '0700',
         })
-        
+
         file { $backup_cmd:
             mode    => '0700',
-            content => epp("cfbackup/files_backup.sh.epp", $handler_opts)
+            content => epp('cfbackup/files_backup.sh.epp', $handler_opts)
         }
         -> file { $restore_cmd:
             mode    => '0700',
-            content => epp("cfbackup/files_restore.sh.epp", $handler_opts)
+            content => epp('cfbackup/files_restore.sh.epp', $handler_opts)
         }
         -> file { $backup_dir:
             ensure => directory,

@@ -26,8 +26,8 @@ class cfbackup (
     $etc_dir = '/etc/cfbackup'
 
     file { $etc_dir:
-        ensure  => directory,
-        mode    => '0700',
+        ensure => directory,
+        mode   => '0700',
     }
     file { $root_dir:
         ensure => directory,
@@ -109,7 +109,7 @@ class cfbackup (
     include "cfbackup::${crypt}"
 
     # Backup system /etc by default
-    cfbackup::path { "/etc":
+    cfbackup::path { '/etc':
         namespace => 'system',
         id        => 'etc',
         type      => files,
