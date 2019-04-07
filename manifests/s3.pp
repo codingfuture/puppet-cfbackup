@@ -19,6 +19,7 @@ class cfbackup::s3(
     include cfsystem::custombin
 
     $s3cmd = '/usr/local/bin/s3cmd'
+    $s3cfg = "${::cfbackup::etc_dir}/s3cmd.cfg"
     $s3upload = "${cfsystem::custombin::bin_dir}/cfbackup_s3_upload"
     $s3restore = "${cfsystem::custombin::bin_dir}/cfbackup_s3_recover"
 
@@ -35,6 +36,10 @@ class cfbackup::s3(
         ensure   => $s3cmd_version,
         provider => cfpip2,
         require  => Package['pip'],
+    }
+    -> file { $s3cfg:
+        mode    => '0500',
+        content => epp('cfbackup/s3cmd.cfg.epp', $s3params),
     }
     -> file { $cfbackup::upload_helper:
         mode    => '0500',

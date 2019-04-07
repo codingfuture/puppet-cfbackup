@@ -23,6 +23,12 @@ class cfbackup (
     include cfsystem
     include cfsystem::custombin
 
+    $etc_dir = '/etc/cfbackup'
+
+    file { $etc_dir:
+        ensure  => directory,
+        mode    => '0700',
+    }
     file { $root_dir:
         ensure => directory,
         mode   => '0511',

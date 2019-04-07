@@ -12,12 +12,11 @@ class cfbackup::gpg(
     String[1]
         $own_key_id = $::facts['fqdn'],
 ) {
-    $etc_dir = '/etc/cfbackup'
-    $key_dir = '/etc/cfbackup/keys'
+    $key_dir = "${::cfbackup::etc_dir}/keys"
     $own_key_file = "${key_dir}/own.asc-key"
     $own_pubkey_file = "${key_dir}/own.asc"
 
-    file { [ $etc_dir, $key_dir ]:
+    file { $key_dir:
         ensure  => directory,
         mode    => '0700',
         purge   => true,

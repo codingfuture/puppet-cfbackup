@@ -1,8 +1,0 @@
-<% |
-    $url,
-    $bucket,
-    $access_key,
-    $secret_key,
-    $hostname,
-| -%>
-#!/bin/dash

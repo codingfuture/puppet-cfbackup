@@ -70,6 +70,9 @@ decrypt_helper=<%= $::cfbackup::decrypt_helper %>
         for ext in .tar .tar.bz2 .tar.gz tar.xz; do
             tarball="${last_backup_path}${ext}"
 
+            # cleanup
+            /bin/rm -f "$tarball" "${tarball}.enc"
+
             if $download_helper "$ns" "$id" "${tarball}.enc" >>$log_file 2>&1 && \
                $decrypt_helper "${tarball}.enc" "${tarball}" >>$log_file 2>&1; then
                 res=0

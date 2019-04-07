@@ -22,10 +22,8 @@ $s3cmd \
     --ssl \
     --check-certificate \
     --no-encrypt \
-    --acl-private \
     --stats \
     --verbose \
-    put \
-    $file \
-    s3://$bucket/$host/$ns/$id/$(basename $file)
-    
+    get \
+    s3://$bucket/$host/$ns/$id/$(basename $file) \
+    $file
