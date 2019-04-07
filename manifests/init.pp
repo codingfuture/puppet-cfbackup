@@ -107,4 +107,12 @@ class cfbackup (
 
     include "cfbackup::${type}"
     include "cfbackup::${crypt}"
+
+    # Backup system /etc by default
+    cfbackup::path { "/etc":
+        namespace => 'system',
+        id        => 'etc',
+        type      => files,
+        compress  => true,
+    }
 }

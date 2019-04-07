@@ -47,6 +47,8 @@ decrypt_helper=<%= $::cfbackup::decrypt_helper %>
         res=$?
 
         if [ $res -eq 0 ]; then
+            /bin/chown "$(stat -c "%U:%G" $path)" $last_backup_file >>$log_file 2>&1
+
             echo "OK"
         else
             overall_res=1
@@ -101,7 +103,7 @@ decrypt_helper=<%= $::cfbackup::decrypt_helper %>
 
             /bin/tar -x${taropt}f $tarball -C $path >>$log_file 2>&1 && \
                 /bin/rm -f "${tarball:-fail}.enc" "${tarball:-fail}" >>$log_file 2>&1 && \
-                /bin/chown "$(stat -c "%U:%G" $path)" ${last_backup_path} >>$log_file 2>&1
+                /bin/chown "$(stat -c "%U:%G" $path)" $last_backup_path >>$log_file 2>&1
             res=$?
 
             if [ $res -eq 0 ]; then

@@ -1,0 +1,18 @@
+<% |
+    String[1] $path,
+    String[1] $backup_dir,
+    String[1] $base_date='month'
+| -%>
+#!/bin/dash
+
+root_dir=<%= $path %>
+
+<%= $cfbackup::periodic_helper %> "root" "<%= $backup_dir %>" "<%= $base_date %>" <<EOT
+    /usr/bin/rdiff-backup \
+        --backup-mode \
+        --exclude-sockets \
+        --exclude-device-files \
+        --exclude-fifos \
+        $root_dir \
+        \$backup_dir
+EOT

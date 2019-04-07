@@ -1,0 +1,18 @@
+<% |
+    String[1] $path,
+    String[1] $backup_dir,
+| -%>
+#!/bin/dash
+
+root_dir=<%= $path %>
+
+script=$(cat <<EOT
+    /usr/bin/rdiff-backup \
+        --restore-as-of=now \
+        --force \
+        \$backup_dir \
+        $root_dir
+EOT
+)
+
+<%= $cfbackup::periodic_restore_helper %> "root" "<%= $backup_dir %>" "" "$script"

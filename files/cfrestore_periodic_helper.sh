@@ -9,8 +9,8 @@ backup_root_dir=$2
 service_name=$3
 script=$4
 
-if [ -z "$user" -o -z "$backup_root_dir" -o -z "$service_name" ]; then
-    echo "Usage: $0 <user> <backup_root_dir> <service_name>"
+if [ -z "$user" -o -z "$backup_root_dir" -o -z "$script" ]; then
+    echo "Usage: $0 <user> <backup_root_dir> <none> <script>"
     echo "Inner script must be passed to STDIN"
     exit 1
 fi

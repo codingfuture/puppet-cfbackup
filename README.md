@@ -21,6 +21,8 @@ Generic configuration of system backup:
     - periodic backup is aware of base and incremental backup approaches.
     - automatic cleanup of local backups.
     - proper file locking is ensured.
+* File backup strategy:
+    - use `rdiff-backup` for base & incremental periodic dumps.
 
 ### Terminology & Concept
 
@@ -30,6 +32,8 @@ There are three major types of data for backup:
     - requires custom backup procedures for efficiency and integrity purposes.
 * Filesystem:
     - raw file copying is acceptable.
+* Applications:
+    - dummy backup may help with fast recovery, but proper restoration procedure is just a new deployment.
 
 Locations:
 
@@ -141,7 +145,7 @@ This resource type should be used to register service backup procedures.
 
 * `String[1] $namespace` - service namespace.
 * `String[1] $id` - unique service identifier in the namespace.
-* `Enum['periodic_dump'] $type` - type of backup.
+* `Enum['files', 'periodic_dump'] $type` - type of backup.
 * `Boolean $compress = true` - should compression be applied (bzip2).
 * `Optional[String[1]] $prepare = undef` - command to execute during `cfbackup_all`.
 
