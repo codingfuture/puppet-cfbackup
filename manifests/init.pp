@@ -7,6 +7,8 @@
 class cfbackup (
     Enum['s3', 'sftp', 'local']
         $type = 'local',
+    Enum['gpg']
+        $crypt = 'gpg',
     String[1]
         $root_dir = '/mnt/backup',
     String[1]
@@ -32,6 +34,8 @@ class cfbackup (
     $download_latest = "${cfsystem::custombin::bin_dir}/cfbackup_download_latest"
     $upload_helper = "${cfsystem::custombin::bin_dir}/cfbackup_upload_helper"
     $download_helper = "${cfsystem::custombin::bin_dir}/cfbackup_download_helper"
+    $encrypt_helper = "${cfsystem::custombin::bin_dir}/cfbackup_encrypt_helper"
+    $decrypt_helper = "${cfsystem::custombin::bin_dir}/cfbackup_decrypt_helper"
 
     $periodic_helper = "${cfsystem::custombin::bin_dir}/cfbackup_periodic_helper.sh"
     $periodic_restore_helper = "${cfsystem::custombin::bin_dir}/cfrestore_periodic_helper.sh"
@@ -89,4 +93,5 @@ class cfbackup (
     }
 
     include "cfbackup::${type}"
+    include "cfbackup::${crypt}"
 }

@@ -1,5 +1,7 @@
 #!/bin/dash
 
+umask 0077
+
 filter=$1
 
 echo
@@ -14,6 +16,7 @@ echo >>$log_file
 overall_res=0
 
 download_helper=<%= $::cfbackup::download_helper %>
+decrypt_helper=<%= $::cfbackup::decrypt_helper %>
 
 /usr/bin/jq -r \
     '.sections.cfbackup_path | to_entries[] | select(.value.type=="periodic_dump") | "\(.key) \(.value.namespace) \(.value.id)"' \
@@ -67,6 +70,12 @@ download_helper=<%= $::cfbackup::download_helper %>
         for ext in .tar .tar.bz2 .tar.gz tar.xz; do
             tarball="${last_backup_path}${ext}"
 
+            if $download_helper "$ns" "$id" "${tarball}.enc" >>$log_file 2>&1 && \
+               $decrypt_helper "${tarball}.enc" "${tarball}" >>$log_file 2>&1; then
+                res=0
+                break
+            fi
+
             if $download_helper "$ns" "$id" "${tarball}" >>$log_file 2>&1; then
                 res=0
                 break
@@ -75,10 +84,10 @@ download_helper=<%= $::cfbackup::download_helper %>
 
         if [ $res -eq 0 ]; then
             case "$tarball" in
-            *.tar) /bin/tar -xf $tarball -C $path ;;
-            *.tar.bz2) /bin/tar -xjf $tarball -C $path ;;
-            *.tar.gz) /bin/tar -xzf $tarball -C $path ;;
-            *.tar.xz) /bin/tar -xJf $tarball -C $path ;;
+            *.tar) taropt= ;;
+            *.tar.bz2) taropt=j ;;
+            *.tar.gz) taropt=z ;;
+            *.tar.xz) taropt=J ;;
             *)
                 echo "! Unknown format $ext" >>$log_file;
                 overall_res=1
@@ -87,14 +96,19 @@ download_helper=<%= $::cfbackup::download_helper %>
                 ;;
             esac
 
-            /bin/rm -f "${tarball:-fail}"
-            /bin/chown "$(stat -c "%U:%G" $path)" ${last_backup_path}
+            /bin/tar -x${taropt}f $tarball -C $path >>$log_file 2>&1 && \
+                /bin/rm -f "${tarball:-fail}.enc" "${tarball:-fail}" >>$log_file 2>&1 && \
+                /bin/chown "$(stat -c "%U:%G" $path)" ${last_backup_path} >>$log_file 2>&1
+            res=$?
 
-            echo "OK"
-        else
-            overall_res=1
-            echo "FAILED"
+            if [ $res -eq 0 ]; then
+                echo "OK"
+                continue
+            fi
         fi
+
+        overall_res=1
+        echo "FAILED"
 <% } -%>
     done
 

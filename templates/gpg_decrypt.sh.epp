@@ -1,0 +1,13 @@
+#!/bin/dash
+
+file=$1
+output=$2
+
+/usr/bin/gpg \
+    --no-tty \
+    --batch \
+    --verbose \
+    --decrypt \
+    --output=$output \
+    <%= $::cfbackup::gpg::recipient_args.join(' ') %> \
+    $file

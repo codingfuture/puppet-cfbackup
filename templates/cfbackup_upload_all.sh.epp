@@ -1,5 +1,7 @@
 #!/bin/dash
 
+umask 0077
+
 echo
 echo "Performing periodic_dump upload & cleanup"
 echo
@@ -12,6 +14,7 @@ echo >>$log_file
 overall_res=0
 
 upload_helper=<%= $::cfbackup::upload_helper %>
+encrypt_helper=<%= $::cfbackup::encrypt_helper %>
 
 /usr/bin/jq -r \
     '.sections.cfbackup_path | to_entries[] | select(.value.type=="periodic_dump") | "\(.key) \(.value.namespace) \(.value.id) (.value.compress)"' \
@@ -49,9 +52,11 @@ upload_helper=<%= $::cfbackup::upload_helper %>
 
             echo -n "> Uploading $path/$sub_dir to $ns/$id/${sub_dir} (${tarext}) ... "
 
-            /bin/tar c$taropt -C "$path" "$sub_dir" -f "$path/${sub_dir}${tarext}"
+            tarball="${path:-fail}/${sub_dir}${tarext}"
 
-            $upload_helper "$ns" "$id" "$path/${sub_dir}${tarext}" >>$log_file 2>&1
+            /bin/tar c$taropt -C "$path" "$sub_dir" -f "$tarball" >>$log_file 2>&1 && \
+                $encrypt_helper "$tarball" "${tarball}.enc" >>$log_file 2>&1 && \
+                $upload_helper "$ns" "$id" "${tarball}.enc" >>$log_file 2>&1
             res=$?
 
             if [ $res -eq 0 ]; then
@@ -59,15 +64,16 @@ upload_helper=<%= $::cfbackup::upload_helper %>
             else
                 overall_res=1
                 echo "FAILED"
+                continue
             fi
 <% } -%>
 
             if [ "$sub_dir" = "$last_backup" ]; then
-                /bin/rm -f "${path:-fail}/${sub_dir}${tarext}"
+                /bin/rm -f "$tarball" "${tarball}.enc"
                 break
             elif [ $res -eq 0 ]; then
                 echo "> Removing old $path/$sub_dir"
-                /bin/rm -rf "${path:-fail}/${sub_dir:-fail}" "$path/${sub_dir}${tarext}"
+                /bin/rm -rf "${path:-fail}/${sub_dir:-fail}" "$tarball" "${tarball}.enc"
             fi
         done
 
