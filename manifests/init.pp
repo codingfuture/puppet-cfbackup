@@ -53,6 +53,12 @@ class cfbackup (
     ensure_packages(['jq'])
 
     Package['jq']
+    -> File[$periodic_helper]
+    -> File[$periodic_restore_helper]
+    -> File[$upload_helper]
+    -> File[$download_helper]
+    -> File[$encrypt_helper]
+    -> File[$decrypt_helper]
     -> file { $backup_all:
         mode    => '0555',
         content => epp('cfbackup/cfbackup_all.sh.epp'),
@@ -65,6 +71,7 @@ class cfbackup (
         mode    => '0555',
         content => epp('cfbackup/cfbackup_download_latest.sh.epp'),
     }
+    -> anchor { 'cfbackup-ready': }
     ->cfsystem_memory_weight { 'cfbackup':
         ensure => present,
         weight => 1,
