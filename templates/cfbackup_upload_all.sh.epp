@@ -35,7 +35,7 @@ encrypt_helper=<%= $::cfbackup::encrypt_helper %>
         last_backup=$(cat "$path/last_backup")
 
         /bin/ls -v "$path" | \
-            /bin/egrep '^[0-9]+[0-9_-]+$' \
+            /bin/egrep '^[0-9]+[WQ0-9_-]+$' \
             | while read sub_dir; do
 
 <% if $::cfbackup::type == 'local' { -%>
