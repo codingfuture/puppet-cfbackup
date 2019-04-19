@@ -12,6 +12,9 @@ class cfbackup::gpg(
     String[1]
         $own_key_id = $::facts['fqdn'],
 ) {
+    # It seems implictely required by GPG
+    ensure_packages(['python-dateutil'])
+
     $key_dir = "${::cfbackup::etc_dir}/keys"
     $own_key_file = "${key_dir}/own.asc-key"
     $own_pubkey_file = "${key_dir}/own.asc"
