@@ -18,6 +18,11 @@ define cfbackup::path(
 
     $path = $title
 
+    ensure_resource('file', "${cfbackup::root_dir}/${namespace}", {
+        ensure => directory,
+        mode   => '0711',
+    })
+
     if $type == 'files' {
         if $prepare {
             fail("'files' backup type does not support custom prepare handler!")
@@ -33,11 +38,6 @@ define cfbackup::path(
             path       => $path,
             backup_dir => $backup_dir,
         }
-
-        ensure_resource('file', "${cfbackup::root_dir}/${namespace}", {
-            ensure => directory,
-            mode   => '0711',
-        })
 
         file { $backup_cmd:
             mode    => '0700',
