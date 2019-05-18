@@ -7,6 +7,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 
 - FIXED: missing python-dateutil as implicit dependency
 - FIXED: upload for quarterly and weekly backups
+- FIXED: files & periodic_dump in the same namespace
 
 ## 1.3.0 (2019-04-14)
 

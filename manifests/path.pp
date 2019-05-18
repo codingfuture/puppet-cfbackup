@@ -36,7 +36,7 @@ define cfbackup::path(
 
         ensure_resource('file', "${cfbackup::root_dir}/${namespace}", {
             ensure => directory,
-            mode   => '0700',
+            mode   => '0711',
         })
 
         file { $backup_cmd:
