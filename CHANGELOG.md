@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file. This
 project adheres to [Semantic Versioning](http://semver.org/).
 
-## (next)
+## 1.3.1 (2019-06-17)
 
 - FIXED: missing python-dateutil as implicit dependency
 - FIXED: upload for quarterly and weekly backups
