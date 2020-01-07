@@ -57,8 +57,8 @@ encrypt_helper=<%= $::cfbackup::encrypt_helper %>
             # cleanup
             /bin/rm -f "$tarball" "${tarball}.enc"
 
-            /bin/tar c$taropt -C "$path" "$sub_dir" -f "$tarball" >>$log_file 2>&1 && \
-                $encrypt_helper "$tarball" "${tarball}.enc" >>$log_file 2>&1 && \
+            /bin/tar c$taropt -C "$path" "$sub_dir" 2>>$log_file | \
+                $encrypt_helper "" "${tarball}.enc" >>$log_file 2>&1 && \
                 $upload_helper "$ns" "$id" "${tarball}.enc" >>$log_file 2>&1
             res=$?
 

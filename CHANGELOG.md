@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file. This
 project adheres to [Semantic Versioning](http://semver.org/).
 
+## (next)
+
+- CHANGED: optimized backup creation to skip tempoary tarball file
+
 ## 1.3.1 (2019-06-17)
 
 - FIXED: missing python-dateutil as implicit dependency
